@@ -14,17 +14,24 @@
         android:id="@+id/imageView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.8"
-        android:layout_marginBottom="20dp"
+        android:layout_weight="0"
+        android:layout_marginBottom="5dp"
         android:contentDescription="G代码示例图片"
 
         tools:srcCompat="@tools:sample/backgrounds/scenic" />
-
+    <WebView
+        android:id="@+id/webview"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginBottom="5dp" />
     <!-- ScrollView 包裹 G 代码文本 -->
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="249dp"
-        android:layout_weight="1">
+        android:layout_height="0dp"
+        android:layout_weight="0"
+        android:layout_x="5dp"
+        android:layout_y="86dp">
 
         <TextView
             android:id="@+id/gcodeTextView"

@@ -2,7 +2,12 @@ package com.example.myapplication.image;
 
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -14,16 +19,20 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.myapplication.MainActivity;
 import com.example.myapplication.R;
 
+import java.io.IOException;
+
 public class GCodeActivity extends AppCompatActivity {
 
     private static final int PICK_IMAGE = 1;
     private static final int CAPTURE_IMAGE = 2;
     private ImageView imageView;
     private TextView gcodeTextView;
-
+    private WebView webView;
     private Bitmap bitmap;
+    private Uri imageUri;
+    private String imageUriString;
 
-    @SuppressLint("SetTextI18n")
+    @SuppressLint({"SetTextI18n", "SetJavaScriptEnabled"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,10 +45,44 @@ public class GCodeActivity extends AppCompatActivity {
             return insets;
         });
 
+        // 获取传递过来的 imageUri 字符串
+        imageUriString = getIntent().getStringExtra("imageUri");
+        imageUri = Uri.parse(imageUriString);
+
         imageView = findViewById(R.id.imageView);
+        webView = findViewById(R.id.webview);
         gcodeTextView = findViewById(R.id.gcodeTextView);
 
-        bitmap = MainActivity.GetImageBitmap();
+        try {
+            bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+            imageView.setImageBitmap(bitmap);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // 启用 JavaScript
+        webView.getSettings().setJavaScriptEnabled(true);
+        // 开启DOM缓存，开启LocalStorage存储（html5的本地存储方式）
+        webView.getSettings().setAllowUniversalAccessFromFileURLs(true);
+        webView.getSettings().setDomStorageEnabled(true);
+        webView.getSettings().setAllowContentAccess(true); // 是否可访问Content Provider的资源，默认值 true
+        webView.getSettings().setAllowFileAccess(true);    // 是否可访问本地文件，默认值 true
+
+        // 加载本地 HTML 文件
+        webView.loadUrl("file:///android_asset/Image2GCode.html");
+        // 等待 WebView 加载完成后，注入 URI 到 JavaScript
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+
+                // 使用 evaluateJavascript 注入 URI 作为图片的源
+                String uriString = imageUri.toString();
+                webView.evaluateJavascript("loadImage('" + uriString + "');", null);
+            }
+        });
+
         gcodeTextView.setText("; Created using Image2GCode v1.0.0 https://github.com/damir3/Image2GCode\n" +
                 "; Image Size: 100x100 mm\n" +
                 "; Gamma: 1\n" +
