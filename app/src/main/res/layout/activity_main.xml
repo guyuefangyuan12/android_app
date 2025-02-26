@@ -146,6 +146,7 @@
                 android:layout_gravity="center"
                 android:layout_margin="20dp"
                 android:background="@drawable/btn1"
+                android:onClick="selectImage"
                 android:text="Button1" />
 
             <TextView
@@ -173,6 +174,7 @@
                 android:layout_gravity="center"
                 android:layout_margin="20dp"
                 android:background="@drawable/btn1"
+                android:onClick="captureImage"
                 android:text="Button1" />
 
             <TextView
@@ -184,4 +186,9 @@
                 android:textColor="#03A9F4" />
         </LinearLayout>
     </androidx.gridlayout.widget.GridLayout>
-</LinearLayout>
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:srcCompat="@tools:sample/backgrounds/scenic"/>
+    </LinearLayout>

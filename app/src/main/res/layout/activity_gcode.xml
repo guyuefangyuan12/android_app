@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/main"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center">
+
+    <!-- 图片 -->
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.8"
+        android:layout_marginBottom="20dp"
+        android:contentDescription="G代码示例图片"
+
+        tools:srcCompat="@tools:sample/backgrounds/scenic" />
+
+    <!-- ScrollView 包裹 G 代码文本 -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="249dp"
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/gcodeTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#EEEEEE"
+            android:gravity="start"
+            android:padding="10dp"
+            android:text="G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30"
+            android:textColor="#000000"
+            android:textSize="16sp"
+            android:typeface="monospace" />
+    </ScrollView>
+
+</LinearLayout>
