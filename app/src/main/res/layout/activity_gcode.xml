@@ -29,7 +29,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0"
+        android:layout_weight="1"
         android:layout_x="5dp"
         android:layout_y="86dp">
 
@@ -40,7 +40,7 @@
             android:background="#EEEEEE"
             android:gravity="start"
             android:padding="10dp"
-            android:text="G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30G21\nG17\nG90\nG00 X0 Y0\nG01 X50 Y50 F300\nG02 X70 Y70 I10 J10\nG00 X0 Y0\nM05\nM30"
+            android:text="G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本"
             android:textColor="#000000"
             android:textSize="16sp"
             android:typeface="monospace" />

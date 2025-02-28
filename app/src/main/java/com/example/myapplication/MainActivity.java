@@ -18,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.myapplication.device.DeviceActivity;
 import com.example.myapplication.image.GCodeActivity;
+import com.example.myapplication.image.ImageEditActivity;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int CAPTURE_IMAGE = 2;
     private ImageView imageView;
 
-    private static Uri imageUri;
+    public static Uri imageUri;
 
     public static Bitmap bitmap;
 
@@ -52,6 +53,14 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    public void test(View view){
+        if(imageUri == null) return;
+        Intent intent = new Intent(MainActivity.this, ImageEditActivity.class);
+        intent.putExtra("imageUri", imageUri.toString());
+        startActivity(intent);
+
+    }
+
     public void selectImage(View view) {
         Intent intent1 = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent1, PICK_IMAGE);
@@ -68,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
         //startActivity(intent);
 
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data){

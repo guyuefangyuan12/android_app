@@ -552,32 +552,32 @@
 		var offsetX = Math.max(borderX, parseFloat(settings.overscanDist.value) + reverseOffset);
 
 		var gcode = [];
-		gcode.push("; Created using Image2GCode v1.0.0 https://github.com/damir3/Image2GCode");
-		gcode.push("; Image Size: " + (width * dx) + "x" + (height * dy) + " mm");
-		gcode.push("; Gamma: " + elements.gamma.value);
-		gcode.push("; Mode: " + (settings.halftoneMode.checked ? "halftone" : "greyscale"));
-		gcode.push("; Resolution: " + width + "x" + height + " px, " + dx + "x" + dy + " mm/px");
-		gcode.push("; Laser Speed: " + settings.burnSpeed.value + " mm/sec");
-		gcode.push("; Travel Speed: " + settings.travelSpeed.value + " mm/sec");
-		gcode.push("; Power: [" + minPower + ", " + maxPower + "]");
-		gcode.push("; Path: " + (zigZag ? "Zig-Zag" : "Raster"));
-		gcode.push(";");
+		// Android.saveGCode("; Created using Image2GCode v1.0.0 https://github.com/damir3/Image2GCode");
+		// Android.saveGCode("; Image Size: " + (width * dx) + "x" + (height * dy) + " mm");
+		// Android.saveGCode("; Gamma: " + elements.gamma.value);
+		// Android.saveGCode("; Mode: " + (settings.halftoneMode.checked ? "halftone" : "greyscale"));
+		// Android.saveGCode("; Resolution: " + width + "x" + height + " px, " + dx + "x" + dy + " mm/px");
+		// Android.saveGCode("; Laser Speed: " + settings.burnSpeed.value + " mm/sec");
+		// Android.saveGCode("; Travel Speed: " + settings.travelSpeed.value + " mm/sec");
+		// Android.saveGCode("; Power: [" + minPower + ", " + maxPower + "]");
+		// Android.saveGCode("; Path: " + (zigZag ? "Zig-Zag" : "Raster"));
+		// Android.saveGCode(";");
 
-		gcode.push("; Image engraving");
-		gcode.push(offCmd);
-		gcode.push("G1 X" + roundCoord(offsetX - ad * dx) + " Y" + roundCoord(borderY) + " Z" + roundCoord(zPos.value) + travelSpeedCmd);
+		// Android.saveGCode("; Image engraving");
+		Android.saveGCode(offCmd);
+		Android.saveGCode("G1 X" + roundCoord(offsetX - ad * dx) + " Y" + roundCoord(borderY) + " Z" + roundCoord(zPos.value) + travelSpeedCmd);
 
 		for (var y = 0; y < height; y++) {
 			if (zigZagCalibration) {
 				reverseOffset = y * dy * 0.1;
 			}
 
-			gcode.push("");
+			Android.saveGCode("");
 			if (y > 0) {
-				gcode.push(offCmd);
-				gcode.push("G1 X" + roundCoord(((zigZag && (y & 1)) ? width + ad - reverseOffset : -ad) * dx + offsetX) + " Y" + roundCoord(y * dy + borderY) + travelSpeedCmd);
+				Android.saveGCode(offCmd);
+				Android.saveGCode("G1 X" + roundCoord(((zigZag && (y & 1)) ? width + ad - reverseOffset : -ad) * dx + offsetX) + " Y" + roundCoord(y * dy + borderY) + travelSpeedCmd);
 			}
-			gcode.push("G1" + laserSpeedCmd);
+			Android.saveGCode("G1" + laserSpeedCmd);
 
 			for (var ix = -ad, lastPower = -1; ix < width + ad; ix++) {
 				var reverse = zigZag && (y & 1);
@@ -589,9 +589,9 @@
 				}
 				if (lastPower !== power) {
 					lastPower = power;
-					gcode.push(onCmd + power);
+					Android.saveGCode(onCmd + power);
 				}
-				gcode.push("G1 X" + roundCoord(x * dx + offsetX + (reverse ? -reverseOffset : dx)));
+				Android.saveGCode("G1 X" + roundCoord(x * dx + offsetX + (reverse ? -reverseOffset : dx)));
 			}
 		}
 
@@ -600,30 +600,62 @@
 			var x2 = roundCoord(x1 + width * dx + borderX * 2);
 			var y1 = 0;
 			var y2 = roundCoord(y1 + height * dy + borderY * 2);
-			gcode.push("");
-			gcode.push("; Image cutting");
-			gcode.push(offCmd);
-			gcode.push("G1 X" + x1 + " Y" + y2 + travelSpeedCmd);
-			gcode.push(onCmd + cutPower);
-			gcode.push("G1" + cuttingSpeedCmd);
+			Android.saveGCode("");
+			Android.saveGCode("; Image cutting");
+			Android.saveGCode(offCmd);
+			Android.saveGCode("G1 X" + x1 + " Y" + y2 + travelSpeedCmd);
+			Android.saveGCode(onCmd + cutPower);
+			Android.saveGCode("G1" + cuttingSpeedCmd);
 			for (var i = parseInt(settings.numCutPasses.value); i > 0; i--) {
-				gcode.push("G1 X" + x2 + " Y" + y2);
-				gcode.push("G1 X" + x2 + " Y" + y1);
-				gcode.push("G1 X" + x1 + " Y" + y1);
-				gcode.push("G1 X" + x1 + " Y" + y2);
+				Android.saveGCode("G1 X" + x2 + " Y" + y2);
+				Android.saveGCode("G1 X" + x2 + " Y" + y1);
+				Android.saveGCode("G1 X" + x1 + " Y" + y1);
+				Android.saveGCode("G1 X" + x1 + " Y" + y2);
 			}
 		}
 
-		gcode.push(offCmd);
-		gcode.push("G1 X0 Y0" + travelSpeedCmd);
-		gcode.push("");
-
+		Android.saveGCode(offCmd);
+		Android.saveGCode("G1 X0 Y0" + travelSpeedCmd);
+		Android.saveGCode("");
+		
+		Android.showGCode();
+		
 		var blob = new Blob([gcode.join("\n")], { type: "text/plain" });
-		var a = document.createElement("a");
-		a.download = fileName + ".gcode";
-		a.href = window.URL.createObjectURL(blob);
-		a.click();
+		//Android.saveGCode("blob");
+
+		// var a = document.createElement("a");
+		// a.download = fileName + ".gcode";
+		// a.href = window.URL.createObjectURL(blob);
+		// a.click();
 	}
+
+	// function sendLargeDataToAndroid(largeData) {
+	// 	var chunkSize = 1024 * 1024;  // 每块 1MB
+	// 	var chunks = Math.ceil(largeData.length / chunkSize);
+	// 	var currentChunk = 0;  // 当前正在发送的块
+
+	// 	function sendNextChunk() {
+	// 		if (currentChunk < chunks) {
+	// 			var start = currentChunk * chunkSize;
+	// 			var end = Math.min(start + chunkSize, largeData.length);
+	// 			var chunk = largeData.substring(start, end);
+
+	// 			// 逐块发送数据并等待 Java 端确认
+	// 			Android.saveChunkToFile(chunk, currentChunk, chunks);
+	// 		}
+	// 	}
+
+	// 	// 调用 JavaScript 接口时，在每次块数据处理完后，通知 JavaScript 端继续发送下一个块
+	// 	window.receiveDataFromAndroid = function(response) {
+	// 		if (response === "chunkProcessed") {
+	// 			currentChunk++;
+	// 			sendNextChunk();  // 继续发送下一个块
+	// 		}
+	// 	}
+
+	// 	sendNextChunk();  // 启动第一次发送
+	// }
+
 </script>
 
 </html>

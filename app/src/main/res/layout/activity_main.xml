@@ -119,6 +119,7 @@
                 android:layout_gravity="center"
                 android:layout_margin="20dp"
                 android:background="@drawable/btn1"
+                android:onClick="test"
                 android:text="Button1" />
 
             <TextView
