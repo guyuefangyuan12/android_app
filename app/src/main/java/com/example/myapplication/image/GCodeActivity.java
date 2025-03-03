@@ -43,6 +43,8 @@ public class GCodeActivity extends AppCompatActivity {
 
     private static final int PICK_IMAGE = 1;
     private static final int CAPTURE_IMAGE = 2;
+    private static final String GCODE_NAME = "GCode.txt";
+    private static final String URL_NAME = "file:///android_asset/Image2GCode.html";
     private ImageView imageView;
     private TextView gcodeTextView;
     private ScrollView scrollView;
@@ -58,7 +60,7 @@ public class GCodeActivity extends AppCompatActivity {
     @SuppressLint({"SetTextI18n", "SetJavaScriptEnabled"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        File file = new File(getFilesDir(), "example.txt");
+        File file = new File(getFilesDir(), GCODE_NAME);
         StringBuffer sb = new StringBuffer();
         super.onCreate(savedInstanceState);
         //EdgeToEdge.enable(this);
@@ -112,7 +114,7 @@ public class GCodeActivity extends AppCompatActivity {
         //webViewSetting.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.TEXT_AUTOSIZING);
 
         // 加载本地 HTML 文件
-        webView.loadUrl("file:///android_asset/Image2GCode.html");
+        webView.loadUrl(URL_NAME);
         // 等待 WebView 加载完成后，注入 URI 到 JavaScript
         //webView.setWebViewClient(new WebViewClient());
         webView.setWebViewClient(new WebViewClient() {
@@ -131,6 +133,19 @@ public class GCodeActivity extends AppCompatActivity {
 
         webView.addJavascriptInterface(new Object() {
             @android.webkit.JavascriptInterface
+            public void initialGCode() {
+                if(file.exists()) file.delete();
+                fileContentBuilder = new StringBuilder();
+                // 使用 runOnUiThread 更新 UI
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // 更新 TextView
+                        gcodeTextView.setText("");
+                    }
+                });
+            }
+            @android.webkit.JavascriptInterface
             public void saveGCode(String GCode) {
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, true))) {
                     // 创建一个动态变化的字符串
@@ -148,8 +163,8 @@ public class GCodeActivity extends AppCompatActivity {
 
             @android.webkit.JavascriptInterface
             public void showGCode() throws IOException{
-
-                FileInputStream fis = openFileInput("example.txt");
+                // *.nc
+                FileInputStream fis = openFileInput(GCODE_NAME); // *.nc
                 reader = new BufferedReader(new InputStreamReader(fis));
 
                 // 动态加载文本内容
@@ -169,12 +184,6 @@ public class GCodeActivity extends AppCompatActivity {
                     }
                 });
 
-            }
-
-            @android.webkit.JavascriptInterface
-            public void receiveBlobData(String data) {
-                // 这里接收到的是 Blob 数据（通常为 Data URL）
-                handleBlobData(data);
             }
 
         }, "Android");
@@ -205,7 +214,7 @@ public class GCodeActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    int batchSize = 100; // 每次加载100行
+                    int batchSize = 10; // 每次加载100行
                     int lineCount = 0;
 
                     while ((line = reader.readLine()) != null && lineCount < batchSize) {
@@ -233,7 +242,7 @@ public class GCodeActivity extends AppCompatActivity {
 
                 isLoading = false;
             }
-        }, 500); // 模拟延时
+        }, 50); // 模拟延时
     }
 
 }
