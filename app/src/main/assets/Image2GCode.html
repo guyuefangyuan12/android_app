@@ -22,6 +22,8 @@
 
 <head>
 	<meta charset="utf-8">
+	<!-- 视口设置，确保网页在移动设备上适配 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Image to GCode</title>
 	<style>
 		#settings {
@@ -124,12 +126,12 @@
 	</div><br/>
 
 	<label>Halftone Mode:</label><input id="halftoneMode" type="checkbox" checked onchange="updatePreviewImage()"/><br/>
-	<label>Laser ON Command:</label><input id="onCmd" type="text" value="M3 I S"/><br/>
+	<label>Laser ON Command:</label><input id="onCmd" type="text" value="M4 S"/><br/>
 	<label>Laser OFF Command:</label><input id="offCmd" type="text" value="M5"/><br/>
 	<label>Burn Min Power [0 - 255]:</label><input id="minPower" type="number" min="0" max="255" value="0"/><br/>
 	<label>Burn Max Power [0 - 255]:</label><input id="maxPower" type="number" min="0" max="255" value="19"/><br/>
 	<label>Burn Speed (mm/min):</label><input id="burnSpeed" type="number" min="1" value="1000"/><br/>
-	<label>Travel Speed (mm/min):</label><input id="travelSpeed" type="number" min="1" value="6000"/><br/>
+	<label>Travel Speed (mm/min):</label><input id="travelSpeed" type="number" min="1" value="1000"/><br/>
 	<label>Image Width (mm):</label><input id="width" type="number" value="100" min="1" max="10000" onchange="updatePreview(event)"/><br/>
 	<label>Image Height (mm):</label><input id="height" type="number" value="100" min="1" max="10000" onchange="updatePreview(event)"/><br/>
 	<label>Keep proportions:</label><input id="keepProportions" type="checkbox" checked onchange="updatePreview(event)"/><br/>
@@ -552,32 +554,32 @@
 		var offsetX = Math.max(borderX, parseFloat(settings.overscanDist.value) + reverseOffset);
 
 		var gcode = [];
-		// Android.saveGCode("; Created using Image2GCode v1.0.0 https://github.com/damir3/Image2GCode");
-		// Android.saveGCode("; Image Size: " + (width * dx) + "x" + (height * dy) + " mm");
-		// Android.saveGCode("; Gamma: " + elements.gamma.value);
-		// Android.saveGCode("; Mode: " + (settings.halftoneMode.checked ? "halftone" : "greyscale"));
-		// Android.saveGCode("; Resolution: " + width + "x" + height + " px, " + dx + "x" + dy + " mm/px");
-		// Android.saveGCode("; Laser Speed: " + settings.burnSpeed.value + " mm/sec");
-		// Android.saveGCode("; Travel Speed: " + settings.travelSpeed.value + " mm/sec");
-		// Android.saveGCode("; Power: [" + minPower + ", " + maxPower + "]");
-		// Android.saveGCode("; Path: " + (zigZag ? "Zig-Zag" : "Raster"));
-		// Android.saveGCode(";");
+		// gcode.push("; Created using Image2GCode v1.0.0 https://github.com/damir3/Image2GCode");
+		// gcode.push("; Image Size: " + (width * dx) + "x" + (height * dy) + " mm");
+		// gcode.push("; Gamma: " + elements.gamma.value);
+		// gcode.push("; Mode: " + (settings.halftoneMode.checked ? "halftone" : "greyscale"));
+		// gcode.push("; Resolution: " + width + "x" + height + " px, " + dx + "x" + dy + " mm/px");
+		// gcode.push("; Laser Speed: " + settings.burnSpeed.value + " mm/sec");
+		// gcode.push("; Travel Speed: " + settings.travelSpeed.value + " mm/sec");
+		// gcode.push("; Power: [" + minPower + ", " + maxPower + "]");
+		// gcode.push("; Path: " + (zigZag ? "Zig-Zag" : "Raster"));
+		// gcode.push(";");
 
-		// Android.saveGCode("; Image engraving");
-		Android.saveGCode(offCmd);
-		Android.saveGCode("G1 X" + roundCoord(offsetX - ad * dx) + " Y" + roundCoord(borderY) + " Z" + roundCoord(zPos.value) + travelSpeedCmd);
+		// gcode.push("; Image engraving");
+		gcode.push(offCmd);
+		gcode.push("G1 X" + roundCoord(offsetX - ad * dx) + " Y" + roundCoord(borderY) + " Z" + roundCoord(zPos.value) + travelSpeedCmd);
 
 		for (var y = 0; y < height; y++) {
 			if (zigZagCalibration) {
 				reverseOffset = y * dy * 0.1;
 			}
 
-			Android.saveGCode("");
+			gcode.push("");
 			if (y > 0) {
-				Android.saveGCode(offCmd);
-				Android.saveGCode("G1 X" + roundCoord(((zigZag && (y & 1)) ? width + ad - reverseOffset : -ad) * dx + offsetX) + " Y" + roundCoord(y * dy + borderY) + travelSpeedCmd);
+				gcode.push(offCmd);
+				gcode.push("G1 X" + roundCoord(((zigZag && (y & 1)) ? width + ad - reverseOffset : -ad) * dx + offsetX) + " Y" + roundCoord(y * dy + borderY) + travelSpeedCmd);
 			}
-			Android.saveGCode("G1" + laserSpeedCmd);
+			gcode.push("G1" + laserSpeedCmd);
 
 			for (var ix = -ad, lastPower = -1; ix < width + ad; ix++) {
 				var reverse = zigZag && (y & 1);
@@ -589,10 +591,13 @@
 				}
 				if (lastPower !== power) {
 					lastPower = power;
-					Android.saveGCode(onCmd + power);
+					gcode.push(onCmd + power);
 				}
-				Android.saveGCode("G1 X" + roundCoord(x * dx + offsetX + (reverse ? -reverseOffset : dx)));
+				gcode.push("G1 X" + roundCoord(x * dx + offsetX + (reverse ? -reverseOffset : dx)));
 			}
+			var GCode = gcode.join("\n");
+			Android.saveGCode(GCode);
+			gcode.length = 0;
 		}
 
 		if (settings.cutImage.checked) {
@@ -600,28 +605,31 @@
 			var x2 = roundCoord(x1 + width * dx + borderX * 2);
 			var y1 = 0;
 			var y2 = roundCoord(y1 + height * dy + borderY * 2);
-			Android.saveGCode("");
-			Android.saveGCode("; Image cutting");
-			Android.saveGCode(offCmd);
-			Android.saveGCode("G1 X" + x1 + " Y" + y2 + travelSpeedCmd);
-			Android.saveGCode(onCmd + cutPower);
-			Android.saveGCode("G1" + cuttingSpeedCmd);
+			gcode.push("");
+			gcode.push("; Image cutting");
+			gcode.push(offCmd);
+			gcode.push("G1 X" + x1 + " Y" + y2 + travelSpeedCmd);
+			gcode.push(onCmd + cutPower);
+			gcode.push("G1" + cuttingSpeedCmd);
 			for (var i = parseInt(settings.numCutPasses.value); i > 0; i--) {
-				Android.saveGCode("G1 X" + x2 + " Y" + y2);
-				Android.saveGCode("G1 X" + x2 + " Y" + y1);
-				Android.saveGCode("G1 X" + x1 + " Y" + y1);
-				Android.saveGCode("G1 X" + x1 + " Y" + y2);
+				gcode.push("G1 X" + x2 + " Y" + y2);
+				gcode.push("G1 X" + x2 + " Y" + y1);
+				gcode.push("G1 X" + x1 + " Y" + y1);
+				gcode.push("G1 X" + x1 + " Y" + y2);
 			}
 		}
 
-		Android.saveGCode(offCmd);
-		Android.saveGCode("G1 X0 Y0" + travelSpeedCmd);
-		Android.saveGCode("");
+		gcode.push(offCmd);
+		gcode.push("G1 X0 Y0" + travelSpeedCmd);
+		gcode.push("");
 		
+		// Android.showGCode();
+		
+		// var blob = new Blob([gcode.join("\n")], { type: "text/plain" });
+		Android.saveGCode("blob");
 		Android.showGCode();
-		
-		var blob = new Blob([gcode.join("\n")], { type: "text/plain" });
-		//Android.saveGCode("blob");
+
+
 
 		// var a = document.createElement("a");
 		// a.download = fileName + ".gcode";

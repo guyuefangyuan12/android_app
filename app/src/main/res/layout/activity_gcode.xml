@@ -27,11 +27,10 @@
         android:layout_marginBottom="5dp" />
     <!-- ScrollView 包裹 G 代码文本 -->
     <ScrollView
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_x="5dp"
-        android:layout_y="86dp">
+        android:layout_weight="1">
 
         <TextView
             android:id="@+id/gcodeTextView"
