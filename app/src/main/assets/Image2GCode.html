@@ -568,8 +568,14 @@
 		// gcode.push(";");
 
 		// gcode.push("; Image engraving");
-		gcode.push(offCmd);
+
+
+		// gcode.push(offCmd);
+		gcode.push("G00 G17 G40 G21 G54");
+		gcode.push("G90");
+
 		gcode.push("G1 X" + roundCoord(offsetX - ad * dx) + " Y" + roundCoord(borderY) + " Z" + roundCoord(zPos.value) + travelSpeedCmd);
+		//gcode.push("G0 X" + 0 + " Y" + 0 + travelSpeedCmd);
 
 		for (var y = 0; y < height; y++) {
 			if (zigZagCalibration) {
@@ -579,7 +585,7 @@
 			gcode.push("");
 			if (y > 0) {
 				gcode.push(offCmd);
-				gcode.push("G1 X" + roundCoord(((zigZag && (y & 1)) ? width + ad - reverseOffset : -ad) * dx + offsetX) + " Y" + roundCoord(y * dy + borderY) + travelSpeedCmd);
+				gcode.push("G0 X" + roundCoord(((zigZag && (y & 1)) ? width + ad - reverseOffset : -ad) * dx + offsetX) + " Y" + roundCoord(y * dy + borderY) + travelSpeedCmd);
 			}
 			gcode.push("G1" + laserSpeedCmd);
 
@@ -597,7 +603,7 @@
 				}
 				gcode.push("G1 X" + roundCoord(x * dx + offsetX + (reverse ? -reverseOffset : dx)));
 			}
-			var GCode = gcode.join("\n");
+			var GCode = gcode.join("\n") + "\n";
 			Android.saveGCode(GCode);
 			gcode.length = 0;
 		}
@@ -619,16 +625,20 @@
 				gcode.push("G1 X" + x1 + " Y" + y1);
 				gcode.push("G1 X" + x1 + " Y" + y2);
 			}
+			var GCode = gcode.join("\n") + "\n";
+			Android.saveGCode(GCode);
+			gcode.length = 0;
 		}
-
 		gcode.push(offCmd);
-		gcode.push("G1 X0 Y0" + travelSpeedCmd);
+		gcode.push("G0 X0 Y0" + travelSpeedCmd);
 		gcode.push("");
-		
+		var GCode = gcode.join("\n") + "\n";
+		Android.saveGCode(GCode);
+		gcode.length = 0;
 		// Android.showGCode();
 		
 		// var blob = new Blob([gcode.join("\n")], { type: "text/plain" });
-		Android.saveGCode("blob");
+		// Android.saveGCode("blob");
 		Android.showGCode();
 
 
