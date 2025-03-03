@@ -39,7 +39,7 @@
             android:background="#EEEEEE"
             android:gravity="start"
             android:padding="10dp"
-            android:text="G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本G代码示例文本"
+            android:text="G代码示例文本"
             android:textColor="#000000"
             android:textSize="16sp"
             android:typeface="monospace" />
