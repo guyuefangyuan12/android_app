@@ -38,8 +38,6 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.gridlayout)
     implementation("commons-codec:commons-codec:1.16.0")
-    implementation("commons-logging:commons-logging:1.2")
-    implementation(files("libs\\modbus4j-3.1.0.jar"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

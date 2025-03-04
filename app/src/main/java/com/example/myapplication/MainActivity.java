@@ -16,7 +16,6 @@ import com.example.myapplication.device.DeviceActivity;
 import com.example.myapplication.modbus.ModbusTCPClient;
 import com.example.myapplication.device.device_Control;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -38,9 +37,9 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 try {
                     mtcp.connect("192.168.0.174", 4002, 1, MainActivity.this);
-                    List<Integer> value = Arrays.asList(1, 2, 3);
-                    //mtcp.writeMultipleRegisters(101, value);
-                    List<Integer> data = mtcp.readHoldingRegisters(1, 101, 3);
+                    // List<Integer> value = Arrays.asList(1, 2, 3);
+                    //mtcp.writeReg(101, value);
+                    List<Integer> data = mtcp.readReg(1, 101, 3);
                     Log.d("TCPTest", data.toString());
                 } catch (ModbusTCPClient.ModbusException e) {
                     Log.d("TCPTest", e.getMessage());

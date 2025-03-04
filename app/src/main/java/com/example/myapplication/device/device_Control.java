@@ -88,8 +88,10 @@ public class device_Control extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    mtcp.FileTransPort(101, "abc.enc", device_Control.this);
-                    //mtcp.writeMultipleRegisters(101,values);
+                    //mtcp.FileTransPort(101, "abc.enc", device_Control.this);
+                    //mtcp.writeReg(101,values);
+                    List<Integer> data = mtcp.readReg(1, 1000, 6);
+                    Log.d("devicecontrol", data.toString());
                 } catch (ModbusTCPClient.ModbusException e) {
                     Log.d("devicecontrol", e.getMessage());
                 }

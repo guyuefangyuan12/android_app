@@ -23,47 +23,64 @@ public class ModBuscode {
     public static final int FileDataCountLen = 2;
     public static final int FileDataLen = 1;
 
+    /**
+     * Modbus TCP帧解析异常
+     */
     public static class ModbusFrameException extends Exception {
+        /**
+         * 构造函数
+         *
+         * @param message 异常信息
+         */
         public ModbusFrameException(String message) {
             super(message);
         }
     }
 
-    private static byte[] createMbapHeader(int transactionId, int unitId, int pduLength) {
+    /**
+     * 生成Modbus TCP MBAP头
+     *
+     * @param transactionId int 事务ID
+     * @param unitId        int 单元ID
+     * @param pduLength     int pdu的长度
+     * @return byte[] 生成MBAP头
+     */
+    private static byte[] encodeMbapFrame(int transactionId, int unitId, int pduLength) {
         ByteBuffer buffer = ByteBuffer.allocate(MbapFrameLen)
                 .order(ByteOrder.BIG_ENDIAN)
-                .putShort((short) transactionId)
-                .putShort((short) 0x0000)    // 协议标识符
+                .putShort((short) transactionId) // 事务ID
+                .putShort((short) 0x0000)        // 协议标识符
                 .putShort((short) (pduLength + 1)) // 长度（包含单元ID）
-                .put((byte) unitId);
+                .put((byte) unitId);            // 单元ID
         return buffer.array();
     }
 
-    public static int[] parseMbapFrame(byte[] frame) throws ModbusFrameException {
+    /**
+     * 解析Modbus TCP MBAP头
+     *
+     * @param frame byte[] modbus tcp帧
+     * @return List<Integer> MBAP头中的事务ID、单元ID、长度
+     * @throws ModbusFrameException 如果帧太短
+     */
+    public static List<Integer> decodeMbapFrame(byte[] frame) throws ModbusFrameException {
         if (frame.length < MbapFrameLen) {
             throw new ModbusFrameException("Frame too short (" + frame.length + " bytes)");
         }
 
         ByteBuffer buffer = ByteBuffer.wrap(frame).order(ByteOrder.BIG_ENDIAN);
-        int[] mbapHeader = new int[3];
-        mbapHeader[0] = buffer.getShort() & 0xFFFF;
-        mbapHeader[1] = buffer.get(6) & 0xFF;
-        mbapHeader[2] = buffer.getShort(4) & 0xFFFF;
+        List<Integer> mbapHeader = new ArrayList<>();
+        mbapHeader.add(buffer.getShort() & 0xFFFF); // 事务ID
+        mbapHeader.add(buffer.get(6) & 0xFF); // 单元ID
+        mbapHeader.add(buffer.getShort(4) & 0xFFFF); // 长度（包含单元ID）
         return mbapHeader;
     }
 
-    public static class MbapHeader {
-        public final int transactionId;
-        public final int unitId;
-        public final int length;
-
-        public MbapHeader(int transactionId, int unitId, int length) {
-            this.transactionId = transactionId;
-            this.unitId = unitId;
-            this.length = length;
-        }
-    }
-
+    /**
+     * 检查Modbus返回值是否包含异常信息
+     *
+     * @param functionCode byte Modbus返回的函数码
+     * @throws ModbusFrameException 如果包含异常信息
+     */
     private static void checkException(byte functionCode) throws ModbusFrameException {
         if ((functionCode & ErrorFunCode) != 0) {
             throw new ModbusFrameException("Modbus exception: 0x" +
@@ -71,96 +88,151 @@ public class ModBuscode {
         }
     }
 
-    public static byte[] encodeReadHoldingRegisters(
+    /**
+     * 生成Modbus读取寄存器的PDU
+     *
+     * @param transactionId int 事务ID
+     * @param unitId        int 单元ID
+     * @param regAddr       int 寄存器地址
+     * @param quantity      int 读取的寄存器数量
+     * @return byte[] 生成的PDU
+     * @throws ModbusFrameException 如果寄存器数量超出范围
+     */
+    public static byte[] encodeReadReg(
             int transactionId,
             int unitId,
-            int startAddress,
+            int regAddr,
             int quantity
     ) throws ModbusFrameException {
-        if (quantity < 1 || quantity > 125) {
-            throw new ModbusFrameException("Quantity out of range (1-125)");
+        if (quantity < 1 || quantity > 1200) {
+            throw new ModbusFrameException("Quantity out of range (1-1200)");
         }
 
         ByteBuffer pdu = ByteBuffer.allocate(FunCodeLen + RegAddrLen + RegCountLen)
-                .put((byte) ReadFunCode)
-                .putShort((short) startAddress)
-                .putShort((short) quantity);
+                .put((byte) ReadFunCode) // 读取寄存器函数码
+                .putShort((short) regAddr) // 寄存器地址
+                .putShort((short) quantity); // 读取的寄存器数量
 
         return ByteBuffer.allocate(MbapFrameLen + FunCodeLen + RegAddrLen + RegCountLen)
-                .put(createMbapHeader(transactionId, unitId, 5))
+                .put(encodeMbapFrame(transactionId, unitId, FunCodeLen + RegAddrLen + RegCountLen))
                 .put(pdu.array())
                 .array();
     }
 
-    public static List<Integer> decodeReadHoldingRegisters(byte[] pdu, int length) throws ModbusFrameException {
-        if (pdu.length < 1) throw new ModbusFrameException("Empty PDU");
+    /**
+     * 解析Modbus读取寄存器的PDU
+     *
+     * @param pdu byte[] PDU
+     * @return List<Integer> 读取的寄存器值
+     * @throws ModbusFrameException 如果PDU为空或寄存器数量不匹配
+     */
+    public static List<Integer> decodeReadReg(byte[] pdu) throws ModbusFrameException {
+        if (pdu.length < 1) throw new ModbusFrameException("PDU为空");
+        // 检查Modbus返回值是否包含异常信息
         checkException(pdu[0]);
         if ((pdu[0] & 0xFF) != ReadFunCode) {
-            throw new ModbusFrameException("Unexpected function code");
+            throw new ModbusFrameException("函数码不是读取寄存器");
         }
         int byteCount = pdu[1] & 0xFF;
         if (pdu.length != FunCodeLen + ReadResponseCountLen + byteCount) {
-            throw new ModbusFrameException("Invalid byte count");
+            throw new ModbusFrameException("Byte count不匹配");
         }
 
         List<Integer> registers = new ArrayList<>();
         for (int i = 0; i < byteCount; i += RegDataLen) {
-            int pos = 2 + i;
+            int pos = FunCodeLen + ReadResponseCountLen + i;
             int data = 0;
             for (int j = 0; j < RegDataLen; j++) {
-                data |= (pdu[pos + j] << (8 * (RegDataLen - 1 - j)));
+                // 读取寄存器值
+                data += (0xFF & pdu[pos + j]) << ((RegDataLen - j - 1) * 8);
             }
             registers.add(data);
         }
         return registers;
     }
 
-    public static byte[] encodeWriteMultipleRegisters(
+    /**
+     * 编码Modbus写寄存器的PDU
+     *
+     * @param transactionId int 事务ID
+     * @param unitId        int 单元ID
+     * @param regAddr       int 寄存器地址
+     * @param values        List<Integer> 寄存器值
+     * @return byte[]        PDU
+     * @throws ModbusFrameException 如果寄存器值数量不在1-1200范围内
+     */
+    public static byte[] encodeWriteReg(
             int transactionId,
             int unitId,
-            int startAddress,
+            int regAddr,
             List<Integer> values
     ) throws ModbusFrameException {
-        if (values.size() < 1 || values.size() > 1200) {
-            throw new ModbusFrameException("Values count out of range (1-123)");
+        if (values.isEmpty() || values.size() > 1200) {
+            throw new ModbusFrameException("Values count out of range (1-1200)");
         }
 
-        ByteBuffer pdu = ByteBuffer.allocate(FunCodeLen + RegAddrLen + RegCountLen + WriteRequestCountLen + values.size() * RegDataLen)
-                .put((byte) WriteFunCode)
-                .putShort((short) startAddress)
-                .putShort((short) values.size())
-                .put((byte) (values.size() * RegDataLen));
+        // 分配PDU缓存
+        ByteBuffer pdu = ByteBuffer.allocate(
+                FunCodeLen + RegAddrLen + RegCountLen + WriteRequestCountLen + values.size() * RegDataLen);
+
+        // 依次写入PDU
+        pdu.put((byte) WriteFunCode) // 函数码
+                .putShort((short) regAddr) // 寄存器地址
+                .putShort((short) values.size()) // 寄存器数量
+                .put((byte) (values.size() * RegDataLen)); // 字节数量
 
         for (int value : values) {
-            pdu.putShort((short) value);
+            pdu.putShort((short) value); // 寄存器值
         }
 
+        // 生成MBAP头
         return ByteBuffer.allocate(MbapFrameLen + pdu.position())
-                .put(createMbapHeader(transactionId, unitId, pdu.position()))
-                .put(pdu.array(), 0, pdu.position())
+                .put(encodeMbapFrame(transactionId, unitId, pdu.position())) // MBAP头
+                .put(pdu.array(), 0, pdu.position()) // PDU
                 .array();
     }
 
-    public static List<Integer> decodeWriteMultipleRegisters(byte[] pdu, int length) throws ModbusFrameException {
+    /**
+     * 解码Modbus写寄存器的PDU
+     *
+     * @param pdu byte[] PDU
+     * @return List<Integer> 解码后的寄存器地址和数量
+     * @throws ModbusFrameException 如果PDU太短或寄存器数量不在1-1200范围内
+     */
+    public static List<Integer> decodeWriteReg(byte[] pdu) throws ModbusFrameException {
         if (pdu.length < 1) throw new ModbusFrameException("Empty PDU");
         checkException(pdu[0]);
+
         if ((pdu[0] & 0xFF) != WriteFunCode) {
             throw new ModbusFrameException("Unexpected function code");
         }
-        int startAddress = 0;
+        int regAddr = 0;
         int quantity = 0;
         List<Integer> result = new ArrayList<>();
+        // 寄存器地址
         for (int i = 0; i < RegAddrLen; i++) {
-            startAddress |= (pdu[1 + i] << (8 * (RegAddrLen - 1 - i)));
+            regAddr |= (pdu[FunCodeLen + i] << (8 * (RegAddrLen - 1 - i)));
         }
+        // 寄存器数量
         for (int i = RegCountLen - 1; i >= 0; i--) {
-            quantity |= (pdu[1 + RegAddrLen + i] << (8 * (RegDataLen - 1 - i)));
+            quantity |= (pdu[FunCodeLen + RegAddrLen + i] << (8 * (RegDataLen - 1 - i)));
         }
-        result.add(startAddress);
+        result.add(regAddr);
         result.add(quantity);
         return result;
     }
 
+
+    /**
+     * 读取寄存器的PDU
+     *
+     * @param transactionId int  ID
+     * @param unitId        int  ID
+     * @param FileAddress   int  读取的文件地址
+     * @param fileData      byte[]  读取的文件数据
+     * @return byte[]  读取寄存器的PDU
+     * @throws ModbusFrameException PDU
+     */
     public static byte[] encodeFileTransport(
             int transactionId,
             int unitId,
@@ -168,23 +240,32 @@ public class ModBuscode {
             byte[] fileData
     ) throws ModbusFrameException {
         if (fileData.length < 1 || fileData.length > 1400) {
-            throw new ModbusFrameException("fileData count out of range (1-1200)");
+            throw new ModbusFrameException("  fileData  1-1400");
         }
         ByteBuffer pdu = ByteBuffer.allocate(FunCodeLen + FileAddrLen + FileDataCountLen + fileData.length * FileDataLen)
                 .order(ByteOrder.LITTLE_ENDIAN)
                 .put((byte) FileFunCode)
                 .putInt(FileAddress)
                 .putShort((short) fileData.length);
+        //  fileData  PDU
         for (byte byteData : fileData) {
             pdu.put(byteData);
         }
+        //  MBAP
         return ByteBuffer.allocate(MbapFrameLen + pdu.position())
-                .put(createMbapHeader(transactionId, unitId, pdu.position()))
+                .put(encodeMbapFrame(transactionId, unitId, pdu.position()))
                 .put(pdu.array(), 0, pdu.position())
                 .array();
     }
 
-    public static List<Integer> decodeFileTransport(byte[] pdu, int length) throws ModbusFrameException {
+    /**
+     * 读取Modbus文件传输的PDU
+     *
+     * @param pdu byte[]  读取的PDU
+     * @return List<Integer>  读取的文件地址和数量
+     * @throws ModbusFrameException PDU
+     */
+    public static List<Integer> decodeFileTransport(byte[] pdu) throws ModbusFrameException {
         if (pdu.length < 1) throw new ModbusFrameException("Empty PDU");
         checkException(pdu[0]);
         if ((pdu[0] & 0xFF) != FileFunCode) {
@@ -193,11 +274,13 @@ public class ModBuscode {
         int fileAddress = 0;
         int quantity = 0;
         List<Integer> result = new ArrayList<>();
+        //  PDU  fileAddress
         for (int i = 0; i < FileAddrLen; i++) {
-            fileAddress += (pdu[1 + i] << (8 * i));
+            fileAddress += (pdu[FunCodeLen + i] << (8 * i));
         }
+        //  PDU  quantity
         for (int i = 0; i < FileDataCountLen; i++) {
-            quantity += (pdu[1 + FileAddrLen + i] << (8 * i));
+            quantity += (pdu[FunCodeLen + FileAddrLen + i] << (8 * i));
         }
         result.add(fileAddress);
         result.add(quantity);
