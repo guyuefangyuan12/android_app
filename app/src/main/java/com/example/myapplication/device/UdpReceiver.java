@@ -36,6 +36,7 @@ public class UdpReceiver {
                     byte[] buffer = new byte[4096];
                     while (true) {
                         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+                        //int port1 = socket.getLocalPort();
                         socket.receive(packet);
 
                         String data = new String(packet.getData(), 0, packet.getLength());
@@ -48,9 +49,7 @@ public class UdpReceiver {
                             int port = Integer.parseInt(parts[1]);
                             String model = parts[2];
                             String deviceId = parts[3];
-
                             Device device = new Device(ip, port, model, deviceId);
-
                             // 通知UI
                             if (listener != null) {
                                 handler.post(() -> listener.onDeviceReceived(device));

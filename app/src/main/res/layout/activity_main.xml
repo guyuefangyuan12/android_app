@@ -34,7 +34,7 @@
                 android:layout_margin="20dp"
                 android:background="@drawable/btn1"
                 android:gravity="center"
-                android:onClick="onClick"
+                android:onClick="onClickDevice"
                 android:text="Button1"
                 android:textColorLink="@color/white" />
 
@@ -64,6 +64,7 @@
                 android:layout_margin="20dp"
                 android:background="@drawable/btn1"
                 android:gravity="center"
+                android:onClick="testClick"
                 android:text="Button1" />
 
             <TextView

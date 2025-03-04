@@ -32,13 +32,14 @@ android {
 }
 
 dependencies {
-
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.gridlayout)
-    implementation(files("libs\\j2mod-3.2.1.jar"))
+    implementation("commons-codec:commons-codec:1.16.0")
+    implementation("commons-logging:commons-logging:1.2")
+    implementation(files("libs\\modbus4j-3.1.0.jar"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

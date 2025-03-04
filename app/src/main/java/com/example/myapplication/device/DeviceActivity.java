@@ -5,18 +5,16 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.myapplication.R;
+import com.example.myapplication.modbus.ModbusTCPClient;
 
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -26,6 +24,7 @@ import java.util.concurrent.Executors;
 
 
 public class DeviceActivity extends AppCompatActivity implements UdpReceiver.OnDeviceReceivedListener {
+    ModbusTCPClient mtcp = ModbusTCPClient.getInstance();
     private static final String TAG = "UdpListener";
     private static final long DEVICE_EXPIRATION_MS = 10 * 1000; // 10秒超时
     private Set<Device> deviceSet;
@@ -49,13 +48,24 @@ public class DeviceActivity extends AppCompatActivity implements UdpReceiver.OnD
             @Override
             public void onDeviceClick(Device device) {
 
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            mtcp.connect(device.getIp(), device.getPort(), 1, DeviceActivity.this);
+                        } catch (ModbusTCPClient.ModbusException e) {
+                            Log.d("UdpListener", e.getMessage());
+                        }
+                    }
+                }).start();
+
             }
         };
 
         deviceTableAdapter = new DeviceTableAdapter(new CopyOnWriteArrayList<>(), deviceSet, ondeviceClickListener);
         deviceTable.setAdapter(deviceTableAdapter);
         //添加Android自带的分割线
-        deviceTable.addItemDecoration(new DividerItemDecoration(this,DividerItemDecoration.VERTICAL));
+        deviceTable.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         executorService = Executors.newSingleThreadExecutor();
 
         udpReceiver = new UdpReceiver(4001, new Handler(Looper.getMainLooper()), this);
